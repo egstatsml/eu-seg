@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- encoding: utf-8 -*-
 
-
 import os.path as osp
 import time
 import logging
@@ -17,15 +16,19 @@ def setup_logger(name, logpth):
     if dist.is_initialized() and dist.get_rank() != 0:
         log_level = logging.WARNING
     try:
-        logging.basicConfig(level=log_level, format=FORMAT, filename=logfile, force=True)
+        logging.basicConfig(level=log_level,
+                            format=FORMAT,
+                            filename=logfile,
+                            force=True)
     except Exception:
-        for hl in logging.root.handlers: logging.root.removeHandler(hl)
+        for hl in logging.root.handlers:
+            logging.root.removeHandler(hl)
         logging.basicConfig(level=log_level, format=FORMAT, filename=logfile)
     logging.root.addHandler(logging.StreamHandler())
 
 
-def print_log_msg(it, max_iter, lr, time_meter, loss_meter, kl_meter, loss_pre_meter,
-        loss_aux_meters):
+def print_log_msg(it, max_iter, lr, time_meter, loss_meter, kl_meter,
+                  loss_pre_meter, loss_aux_meters):
     t_intv, eta = time_meter.get()
     loss_avg, _ = loss_meter.get()
     if kl_meter is not None:
@@ -34,7 +37,10 @@ def print_log_msg(it, max_iter, lr, time_meter, loss_meter, kl_meter, loss_pre_m
         kl_avg = 0.0
     loss_pre_avg, _ = loss_pre_meter.get()
     if loss_aux_meters is not None:
-        loss_aux_avg = ', '.join(['{}: {:.4f}'.format(el.name, el.get()[0]) for el in loss_aux_meters])
+        loss_aux_avg = ', '.join([
+            '{}: {:.4f}'.format(el.name,
+                                el.get()[0]) for el in loss_aux_meters
+        ])
     else:
         loss_aux_avg = '0.0'
     msg = ', '.join([
@@ -46,7 +52,7 @@ def print_log_msg(it, max_iter, lr, time_meter, loss_meter, kl_meter, loss_pre_m
         'kl: {kl:.4f}',
         'loss_pre: {loss_pre:.4f}',
     ]).format(
-        it=it+1,
+        it=it + 1,
         max_it=max_iter,
         lr=lr,
         time=t_intv,
@@ -54,7 +60,7 @@ def print_log_msg(it, max_iter, lr, time_meter, loss_meter, kl_meter, loss_pre_m
         loss=loss_avg,
         kl=kl_avg,
         loss_pre=loss_pre_avg,
-        )
+    )
     msg += ', ' + loss_aux_avg
     logger = logging.getLogger()
     logger.info(msg)

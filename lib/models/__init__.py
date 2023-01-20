@@ -1,10 +1,7 @@
-
-
 from .bisenetv1 import BiSeNetV1
 from .bisenetv2 import BiSeNetV2, BayesBiSeNetV2
 from .enet import ENet
 from .pidnet import PIDNet
-
 
 model_factory = {
     'bisenetv1': BiSeNetV1,

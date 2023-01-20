@@ -1,4 +1,3 @@
-
 import os
 import os.path as osp
 import cv2
@@ -9,7 +8,6 @@ import argparse
 import tensorrt as trt
 import pycuda.driver as cuda
 import pycuda.autoinit
-
 
 parser = argparse.ArgumentParser()
 subparsers = parser.add_subparsers(dest="command")
@@ -23,7 +21,6 @@ run_parser.add_argument('--impth')
 run_parser.add_argument('--outpth', default='./res.png')
 args = parser.parse_args()
 
-
 np.random.seed(123)
 in_datatype = trt.nptype(trt.float32)
 out_datatype = trt.nptype(trt.int32)
@@ -32,7 +29,6 @@ palette = np.random.randint(0, 256, (256, 3)).astype(np.uint8)
 ctx = pycuda.autoinit.context
 trt.init_libnvinfer_plugins(None, "")
 TRT_LOGGER = trt.Logger()
-
 
 
 def get_image(impth, size):
@@ -47,18 +43,17 @@ def get_image(impth, size):
     return img, (orgH, orgW)
 
 
-
 def allocate_buffers(engine):
-    h_input = cuda.pagelocked_empty(
-            trt.volume(engine.get_binding_shape(0)), dtype=in_datatype)
+    h_input = cuda.pagelocked_empty(trt.volume(engine.get_binding_shape(0)),
+                                    dtype=in_datatype)
     print(engine.get_binding_shape(0))
     d_input = cuda.mem_alloc(h_input.nbytes)
     h_outputs, d_outputs = [], []
     n_outs = 1
     for i in range(n_outs):
-        h_output = cuda.pagelocked_empty(
-                trt.volume(engine.get_binding_shape(i+1)),
-                dtype=out_datatype)
+        h_output = cuda.pagelocked_empty(trt.volume(
+            engine.get_binding_shape(i + 1)),
+                                         dtype=out_datatype)
         d_output = cuda.mem_alloc(h_output.nbytes)
         h_outputs.append(h_output)
         d_outputs.append(d_output)
@@ -73,23 +68,27 @@ def allocate_buffers(engine):
 
 
 def build_engine_from_onnx(onnx_file_path):
-    engine = None ## add this to avoid return deleted engine
-    EXPLICIT_BATCH = 1 << (int)(trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH)
-    with trt.Builder(TRT_LOGGER) as builder, builder.create_network(EXPLICIT_BATCH) as network, builder.create_builder_config() as config, trt.OnnxParser(network, TRT_LOGGER) as parser, trt.Runtime(TRT_LOGGER) as runtime:
+    engine = None  ## add this to avoid return deleted engine
+    EXPLICIT_BATCH = 1 << (int)(
+        trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH)
+    with trt.Builder(TRT_LOGGER) as builder, builder.create_network(
+            EXPLICIT_BATCH
+    ) as network, builder.create_builder_config() as config, trt.OnnxParser(
+            network, TRT_LOGGER) as parser, trt.Runtime(TRT_LOGGER) as runtime:
 
         # Parse model file
         print(f'Loading ONNX file from path {onnx_file_path}...')
         assert os.path.exists(onnx_file_path), f'cannot find {onnx_file_path}'
         with open(onnx_file_path, 'rb') as fr:
             if not parser.parse(fr.read()):
-                print ('ERROR: Failed to parse the ONNX file.')
+                print('ERROR: Failed to parse the ONNX file.')
                 for error in range(parser.num_errors):
-                    print (parser.get_error(error))
+                    print(parser.get_error(error))
                 assert False
 
         # build settings
         builder.max_batch_size = 128
-        config.max_workspace_size = 1 << 30 # 1G
+        config.max_workspace_size = 1 << 30  # 1G
         if args.quant == 'fp16':
             config.set_flag(trt.BuilderFlag.FP16)
 
@@ -133,12 +132,13 @@ def main():
         ctx.push()
         context = engine.create_execution_context()
         ctx.pop()
-        bds = [int(d_input), ] + [int(el) for el in d_outputs]
+        bds = [
+            int(d_input),
+        ] + [int(el) for el in d_outputs]
 
         h_input = np.ascontiguousarray(img)
         cuda.memcpy_htod_async(d_input, h_input, stream)
-        context.execute_async(
-            bindings=bds, stream_handle=stream.handle)
+        context.execute_async(bindings=bds, stream_handle=stream.handle)
         for h_output, d_output in zip(h_outputs, d_outputs):
             cuda.memcpy_dtoh_async(h_output, d_output, stream)
         stream.synchronize()
@@ -151,7 +151,5 @@ def main():
         cv2.imwrite(args.outpth, out)
 
 
-
 if __name__ == '__main__':
     main()
-

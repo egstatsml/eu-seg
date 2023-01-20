@@ -1,5 +1,6 @@
 import mmcv
 
+
 def cityscapes_classes():
     """Cityscapes class names for external use."""
     return [

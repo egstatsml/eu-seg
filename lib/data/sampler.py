@@ -1,4 +1,3 @@
-
 import math
 import torch
 from torch.utils.data.sampler import Sampler
@@ -24,14 +23,22 @@ class RepeatedDistSampler(Sampler):
         shuffle (optional): If true (default), sampler will shuffle the indices
     """
 
-    def __init__(self, dataset, num_imgs, num_replicas=None, rank=None, shuffle=True, ba=False):
+    def __init__(self,
+                 dataset,
+                 num_imgs,
+                 num_replicas=None,
+                 rank=None,
+                 shuffle=True,
+                 ba=False):
         if num_replicas is None:
             if not dist.is_available():
-                raise RuntimeError("Requires distributed package to be available")
+                raise RuntimeError(
+                    "Requires distributed package to be available")
             num_replicas = dist.get_world_size()
         if rank is None:
             if not dist.is_available():
-                raise RuntimeError("Requires distributed package to be available")
+                raise RuntimeError(
+                    "Requires distributed package to be available")
             rank = dist.get_rank()
         self.dataset = dataset
         self.num_replicas = num_replicas
@@ -42,7 +49,6 @@ class RepeatedDistSampler(Sampler):
         self.shuffle = shuffle
         self.ba = ba
 
-
     def __iter__(self):
         # deterministically shuffle based on epoch
         g = torch.Generator()
@@ -51,7 +57,8 @@ class RepeatedDistSampler(Sampler):
         for n in range(n_repeats):
             if self.shuffle:
                 g.manual_seed(n)
-                indices += torch.randperm(len(self.dataset), generator=g).tolist()
+                indices += torch.randperm(len(self.dataset),
+                                          generator=g).tolist()
             else:
                 indices += [i for i in range(len(self.dataset))]
 
@@ -73,4 +80,3 @@ class RepeatedDistSampler(Sampler):
 
     def __len__(self):
         return self.num_imgs_rank
-

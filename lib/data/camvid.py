@@ -18,19 +18,18 @@ import lib.data.transform_cv2 as T
 from lib.data.base_dataset import BaseDataset
 
 
-
 class CamVid(BaseDataset):
     '''
     '''
+
     def __init__(self, dataroot, annpath, trans_func=None, mode='train'):
-        super(CamVid, self).__init__(
-                dataroot, annpath, trans_func, mode)
+        super(CamVid, self).__init__(dataroot, annpath, trans_func, mode)
         self.n_cats = 11
         self.lb_ignore = 255
         self.color_list = [[0, 128, 192], [128, 0, 0], [64, 0, 128],
-                             [192, 192, 128], [64, 64, 128], [64, 64, 0],
-                             [128, 64, 128], [0, 0, 192], [192, 128, 128],
-                             [128, 128, 128], [128, 128, 0]]
+                           [192, 192, 128], [64, 64, 128], [64, 64, 0],
+                           [128, 64, 128], [0, 0, 192], [192, 128, 128],
+                           [128, 128, 128], [128, 128, 0]]
 
         self.lb_map = np.arange(256).astype(np.uint8)
         self.to_tensor = T.ToTensor(
@@ -39,9 +38,9 @@ class CamVid(BaseDataset):
         )
 
     def color2label(self, color_map):
-        label = np.ones(color_map.shape[:2])*self.lb_ignore
+        label = np.ones(color_map.shape[:2]) * self.lb_ignore
         for i, v in enumerate(self.color_list):
-            label[(color_map == v).sum(2)==3] = i
+            label[(color_map == v).sum(2) == 3] = i
         # label = F.one_hot(label, self.n_cats).numpy()
         return label.astype(np.uint8)
 
@@ -50,7 +49,6 @@ class CamVid(BaseDataset):
         label = cv2.imread(lbpth)[:, :, ::-1].copy()
         label = self.color2label(label)
         return img, label
-
 
     # def __getitem__(self, idx):
     #     img, label = super(CamVid, self).__getitem__(idx)

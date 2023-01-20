@@ -7,6 +7,7 @@ import torch.nn.functional as F
 from itertools import chain
 import logging
 
+
 def initialize_weights(*models):
     for model in models:
         for m in model.modules():
@@ -21,6 +22,7 @@ def initialize_weights(*models):
 
 
 class BaseModel(nn.Module):
+
     def __init__(self):
         super(BaseModel, self).__init__()
         self.logger = logging.getLogger(self.__class__.__name__)
@@ -36,14 +38,22 @@ class BaseModel(nn.Module):
     def __str__(self):
         model_parameters = filter(lambda p: p.requires_grad, self.parameters())
         nbr_params = sum([np.prod(p.size()) for p in model_parameters])
-        return super(BaseModel, self).__str__() + f'\nNbr of trainable parameters: {nbr_params}'
+        return super(
+            BaseModel,
+            self).__str__() + f'\nNbr of trainable parameters: {nbr_params}'
         #return summary(self, input_shape=(2, 3, 224, 224))
 
+
 class InitalBlock(nn.Module):
+
     def __init__(self, in_channels, use_prelu=True):
         super(InitalBlock, self).__init__()
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True)
-        self.conv = nn.Conv2d(in_channels, 16 - in_channels, 3, padding=1, stride=2)
+        self.conv = nn.Conv2d(in_channels,
+                              16 - in_channels,
+                              3,
+                              padding=1,
+                              stride=2)
         self.bn = nn.BatchNorm2d(16)
         self.prelu = nn.PReLU(16) if use_prelu else nn.ReLU(inplace=True)
 
@@ -53,9 +63,21 @@ class InitalBlock(nn.Module):
         x = self.prelu(x)
         return x
 
+
 class BottleNeck(nn.Module):
-    def __init__(self, in_channels, out_channels=None, activation=None, dilation=1, downsample=False, proj_ratio=4,
-                        upsample=False, asymetric=False, regularize=True, p_drop=None, use_prelu=True):
+
+    def __init__(self,
+                 in_channels,
+                 out_channels=None,
+                 activation=None,
+                 dilation=1,
+                 downsample=False,
+                 proj_ratio=4,
+                 upsample=False,
+                 asymetric=False,
+                 regularize=True,
+                 p_drop=None,
+                 use_prelu=True):
         super(BottleNeck, self).__init__()
 
         self.pad = 0
@@ -67,19 +89,28 @@ class BottleNeck(nn.Module):
         if regularize: assert p_drop is not None
         if downsample: assert not upsample
         elif upsample: assert not downsample
-        inter_channels = in_channels//proj_ratio
+        inter_channels = in_channels // proj_ratio
 
         # Main
         if upsample:
-            self.spatil_conv = nn.Conv2d(in_channels, out_channels, 1, bias=False)
+            self.spatil_conv = nn.Conv2d(in_channels,
+                                         out_channels,
+                                         1,
+                                         bias=False)
             self.bn_up = nn.BatchNorm2d(out_channels)
             self.unpool = nn.MaxUnpool2d(kernel_size=2, stride=2)
         elif downsample:
-            self.pool = nn.MaxPool2d(kernel_size=2, stride=2, return_indices=True)
+            self.pool = nn.MaxPool2d(kernel_size=2,
+                                     stride=2,
+                                     return_indices=True)
 
         # Bottleneck
         if downsample:
-            self.conv1 = nn.Conv2d(in_channels, inter_channels, 2, stride=2, bias=False)
+            self.conv1 = nn.Conv2d(in_channels,
+                                   inter_channels,
+                                   2,
+                                   stride=2,
+                                   bias=False)
         else:
             self.conv1 = nn.Conv2d(in_channels, inter_channels, 1, bias=False)
         self.bn1 = nn.BatchNorm2d(inter_channels)
@@ -87,16 +118,32 @@ class BottleNeck(nn.Module):
 
         if asymetric:
             self.conv2 = nn.Sequential(
-                nn.Conv2d(inter_channels, inter_channels, kernel_size=(1,5), padding=(0,2)),
+                nn.Conv2d(inter_channels,
+                          inter_channels,
+                          kernel_size=(1, 5),
+                          padding=(0, 2)),
                 nn.BatchNorm2d(inter_channels),
                 nn.PReLU() if use_prelu else nn.ReLU(inplace=True),
-                nn.Conv2d(inter_channels, inter_channels, kernel_size=(5,1), padding=(2,0)),
+                nn.Conv2d(inter_channels,
+                          inter_channels,
+                          kernel_size=(5, 1),
+                          padding=(2, 0)),
             )
         elif upsample:
-            self.conv2 = nn.ConvTranspose2d(inter_channels, inter_channels, kernel_size=3, padding=1,
-                                            output_padding=1, stride=2, bias=False)
+            self.conv2 = nn.ConvTranspose2d(inter_channels,
+                                            inter_channels,
+                                            kernel_size=3,
+                                            padding=1,
+                                            output_padding=1,
+                                            stride=2,
+                                            bias=False)
         else:
-            self.conv2 = nn.Conv2d(inter_channels, inter_channels, 3, padding=dilation, dilation=dilation, bias=False)
+            self.conv2 = nn.Conv2d(inter_channels,
+                                   inter_channels,
+                                   3,
+                                   padding=dilation,
+                                   dilation=dilation,
+                                   bias=False)
         self.bn2 = nn.BatchNorm2d(inter_channels)
         self.prelu2 = nn.PReLU() if use_prelu else nn.ReLU(inplace=True)
 
@@ -114,12 +161,13 @@ class BottleNeck(nn.Module):
             assert (indices is not None) and (output_size is not None)
             identity = self.bn_up(self.spatil_conv(identity))
             if identity.size() != indices.size():
-                pad = (indices.size(3) - identity.size(3), 0, indices.size(2) - identity.size(2), 0)
+                pad = (indices.size(3) - identity.size(3), 0,
+                       indices.size(2) - identity.size(2), 0)
                 identity = F.pad(identity, pad, "constant", 0)
-            identity = self.unpool(identity, indices=indices)#, output_size=output_size)
+            identity = self.unpool(
+                identity, indices=indices)  #, output_size=output_size)
         elif self.downsample:
             identity, idx = self.pool(identity)
-
         '''
         if self.pad > 0:
             if self.pad % 2 == 0 : pad = (0, 0, 0, 0, self.pad//2, self.pad//2)
@@ -128,9 +176,10 @@ class BottleNeck(nn.Module):
         '''
 
         if self.pad > 0:
-            extras = torch.zeros((identity.size(0), self.pad, identity.size(2), identity.size(3)))
+            extras = torch.zeros((identity.size(0), self.pad, identity.size(2),
+                                  identity.size(3)))
             if torch.cuda.is_available(): extras = extras.cuda(0)
-            identity = torch.cat((identity, extras), dim = 1)
+            identity = torch.cat((identity, extras), dim=1)
 
         # Bottleneck
         x = self.conv1(x)
@@ -147,7 +196,8 @@ class BottleNeck(nn.Module):
 
         # When the input dim is odd, we might have a mismatch of one pixel
         if identity.size() != x.size():
-            pad = (identity.size(3) - x.size(3), 0, identity.size(2) - x.size(2), 0)
+            pad = (identity.size(3) - x.size(3), 0,
+                   identity.size(2) - x.size(2), 0)
             x = F.pad(x, pad, "constant", 0)
 
         x += identity
@@ -157,8 +207,15 @@ class BottleNeck(nn.Module):
             return x, idx
         return x
 
+
 class ENet(BaseModel):
-    def __init__(self, num_classes, in_channels=3, freeze_bn=False, aux_mode='train', **_):
+
+    def __init__(self,
+                 num_classes,
+                 in_channels=3,
+                 freeze_bn=False,
+                 aux_mode='train',
+                 **_):
         super(ENet, self).__init__()
         self.aux_mode = aux_mode
         self.bayes = ('bayes' in aux_mode)
@@ -193,20 +250,38 @@ class ENet(BaseModel):
         self.bottleneck38 = BottleNeck(128, dilation=16, p_drop=0.1)
 
         # Stage 4
-        self.bottleneck40 = BottleNeck(128, 64, upsample=True, p_drop=0.1, use_prelu=False)
+        self.bottleneck40 = BottleNeck(128,
+                                       64,
+                                       upsample=True,
+                                       p_drop=0.1,
+                                       use_prelu=False)
         self.bottleneck41 = BottleNeck(64, p_drop=0.1, use_prelu=False)
         self.bottleneck42 = BottleNeck(64, p_drop=0.1, use_prelu=False)
 
         # Stage 5
-        self.bottleneck50 = BottleNeck(64, 16, upsample=True, p_drop=0.1, use_prelu=False)
+        self.bottleneck50 = BottleNeck(64,
+                                       16,
+                                       upsample=True,
+                                       p_drop=0.1,
+                                       use_prelu=False)
         self.bottleneck51 = BottleNeck(16, p_drop=0.1, use_prelu=False)
 
         # Stage 6
-        self.fullconv = nn.ConvTranspose2d(16, num_classes, kernel_size=3, padding=1,
-                                            output_padding=1, stride=2, bias=False)
+        self.fullconv = nn.ConvTranspose2d(16,
+                                           num_classes,
+                                           kernel_size=3,
+                                           padding=1,
+                                           output_padding=1,
+                                           stride=2,
+                                           bias=False)
         if self.bayes:
-            self.out_var = nn.ConvTranspose2d(16, num_classes, kernel_size=3, padding=1,
-                                              output_padding=1, stride=2, bias=False)
+            self.out_var = nn.ConvTranspose2d(16,
+                                              num_classes,
+                                              kernel_size=3,
+                                              padding=1,
+                                              output_padding=1,
+                                              stride=2,
+                                              bias=False)
         else:
             self.out_var = nn.Identity()
         initialize_weights(self)
@@ -273,6 +348,7 @@ class ENet(BaseModel):
             if isinstance(module, nn.BatchNorm2d): module.eval()
 
     def get_params(self):
+
         def add_param_to_list(mod, wd_params, nowd_params):
             for param in mod.parameters():
                 if param.dim() == 1:

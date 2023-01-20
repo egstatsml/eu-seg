@@ -1,4 +1,3 @@
-
 ## bisenetv2
 cfg = dict(
     model_type='bisenetv2',

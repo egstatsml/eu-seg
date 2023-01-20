@@ -1,5 +1,3 @@
-
-
 import importlib
 
 
@@ -16,6 +14,3 @@ def set_cfg_from_file(cfg_path):
     spec_loader = spec.loader.exec_module(cfg_file)
     cfg = cfg_file.cfg
     return cfg_dict(cfg)
-
-
-

@@ -1,11 +1,9 @@
 #!/usr/bin/python
 # -*- encoding: utf-8 -*-
 
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
 
 #  import ohem_cpp
 #  class OhemCELoss(nn.Module):
@@ -28,9 +26,12 @@ class OhemCELoss(nn.Module):
 
     def __init__(self, thresh, lb_ignore=255):
         super(OhemCELoss, self).__init__()
-        self.thresh = -torch.log(torch.tensor(thresh, requires_grad=False, dtype=torch.float)).cuda()
+        self.thresh = -torch.log(
+            torch.tensor(thresh, requires_grad=False,
+                         dtype=torch.float)).cuda()
         self.lb_ignore = lb_ignore
-        self.criteria = nn.CrossEntropyLoss(ignore_index=lb_ignore, reduction='none')
+        self.criteria = nn.CrossEntropyLoss(ignore_index=lb_ignore,
+                                            reduction='none')
 
     def forward(self, logits, labels):
         n_min = labels[labels != self.lb_ignore].numel() // 16
@@ -43,4 +44,3 @@ class OhemCELoss(nn.Module):
 
 if __name__ == '__main__':
     pass
-

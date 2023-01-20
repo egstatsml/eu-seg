@@ -2,7 +2,7 @@
 cfg = dict(
     model_type='pidnet',
     model_config='bayes',
-    var_step = 20,
+    var_step=20,
     n_cats=19,
     num_aux_heads=0,
     lr_start=1e-3,

@@ -2,8 +2,8 @@ import torch
 from torch import nn
 
 
-
 class ADFSoftmax(nn.Module):
+
     def __init__(self, dim=1, min_variance=0.0001):
         super(ADFSoftmax, self).__init__()
         self.dim = dim
@@ -11,7 +11,6 @@ class ADFSoftmax(nn.Module):
 
     def keep_variance(self, x):
         return x + self.min_variance
-
 
     # def forward(self, features_mean, features_variance, eps=1e-5):
     #     """Softmax function applied to a multivariate Gaussian distribution.
@@ -56,14 +55,21 @@ class ADFSoftmax(nn.Module):
 
         log_gaussian_mean = torch.exp(log_gaussian_mean)
         log_gaussian_variance = torch.exp(log_gaussian_variance)
-        log_gaussian_variance = log_gaussian_variance*(torch.exp(features_variance)-1)
+        log_gaussian_variance = log_gaussian_variance * (
+            torch.exp(features_variance) - 1)
 
         # now find the mean and variance of the denominator of the softmax
-        denominator_mean = torch.sum(log_gaussian_mean, dim=self.dim, keepdim=True)
-        denominator_variance = torch.sum(log_gaussian_variance, dim=self.dim, keepdim=True)
+        denominator_mean = torch.sum(log_gaussian_mean,
+                                     dim=self.dim,
+                                     keepdim=True)
+        denominator_variance = torch.sum(log_gaussian_variance,
+                                         dim=self.dim,
+                                         keepdim=True)
         # now approximate the mean and variance of this using taylor expansion approx.
         outputs_mean = log_gaussian_mean / (denominator_mean + eps)
-        outputs_variance = outputs_mean * torch.sqrt(log_gaussian_variance + denominator_variance + eps)
+        outputs_variance = outputs_mean * torch.sqrt(log_gaussian_variance +
+                                                     denominator_variance +
+                                                     eps)
         # constant = torch.sum(log_gaussian_mean, dim=self.dim) + eps
         # constant = constant.unsqueeze(self.dim)
         # outputs_mean = log_gaussian_mean/constant

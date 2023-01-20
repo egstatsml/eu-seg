@@ -1,12 +1,10 @@
 #!/usr/bin/python
 # -*- encoding: utf-8 -*-
 
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
-
 
 from lib.models.adf import ADFSoftmax
 from .resnet import Resnet18
@@ -16,14 +14,21 @@ from torch.nn import BatchNorm2d
 
 class ConvBNReLU(nn.Module):
 
-    def __init__(self, in_chan, out_chan, ks=3, stride=1, padding=1, *args, **kwargs):
+    def __init__(self,
+                 in_chan,
+                 out_chan,
+                 ks=3,
+                 stride=1,
+                 padding=1,
+                 *args,
+                 **kwargs):
         super(ConvBNReLU, self).__init__()
         self.conv = nn.Conv2d(in_chan,
-                out_chan,
-                kernel_size = ks,
-                stride = stride,
-                padding = padding,
-                bias = False)
+                              out_chan,
+                              kernel_size=ks,
+                              stride=stride,
+                              padding=padding,
+                              bias=False)
         self.bn = BatchNorm2d(out_chan)
         self.relu = nn.ReLU(inplace=True)
         self.init_weight()
@@ -61,9 +66,15 @@ class UpSample(nn.Module):
 
 class BiSeNetOutput(nn.Module):
 
-    def __init__(self, in_chan, mid_chan, n_classes, up_factor=32,
-                 bayes=False, prob=False,
-                 *args, **kwargs):
+    def __init__(self,
+                 in_chan,
+                 mid_chan,
+                 n_classes,
+                 up_factor=32,
+                 bayes=False,
+                 prob=False,
+                 *args,
+                 **kwargs):
         super(BiSeNetOutput, self).__init__()
         self.up_factor = up_factor
         self.bayes = bayes
@@ -72,8 +83,10 @@ class BiSeNetOutput(nn.Module):
         self.conv = ConvBNReLU(in_chan, mid_chan, ks=3, stride=1, padding=1)
         self.conv_out = nn.Conv2d(mid_chan, out_chan, kernel_size=1, bias=True)
         self.up = nn.Upsample(scale_factor=up_factor,
-                mode='bilinear', align_corners=False)
-        self.conv_var = nn.Conv2d(mid_chan, out_chan, kernel_size=1, bias=True) if self.bayes else nn.Identity()
+                              mode='bilinear',
+                              align_corners=False)
+        self.conv_var = nn.Conv2d(mid_chan, out_chan, kernel_size=1,
+                                  bias=True) if self.bayes else nn.Identity()
         # if we are being bayesian and want to return a categorical probability, we should set the
         # output here to be an ADF Softmax operator
         self.adf_softmax = ADFSoftmax() if self.prob else nn.Identity()
@@ -88,7 +101,7 @@ class BiSeNetOutput(nn.Module):
             # return None for the variance as it will be ignored anyway
             return feat, None
         else:
-            var = self.conv_var(x ** 2.0)
+            var = self.conv_var(x**2.0)
             # if we specified that we want to get a categorical probability out of this layer,
             # than we need to apply the adf softmax.
             if self.prob:
@@ -96,7 +109,6 @@ class BiSeNetOutput(nn.Module):
             mean = self.up(feat)
             var = self.up(var)
             return mean, var
-
 
     def init_weight(self):
         for ly in self.children():
@@ -117,10 +129,14 @@ class BiSeNetOutput(nn.Module):
 
 
 class AttentionRefinementModule(nn.Module):
+
     def __init__(self, in_chan, out_chan, *args, **kwargs):
         super(AttentionRefinementModule, self).__init__()
         self.conv = ConvBNReLU(in_chan, out_chan, ks=3, stride=1, padding=1)
-        self.conv_atten = nn.Conv2d(out_chan, out_chan, kernel_size= 1, bias=False)
+        self.conv_atten = nn.Conv2d(out_chan,
+                                    out_chan,
+                                    kernel_size=1,
+                                    bias=False)
         self.bn_atten = BatchNorm2d(out_chan)
         #  self.sigmoid_atten = nn.Sigmoid()
         self.init_weight()
@@ -143,6 +159,7 @@ class AttentionRefinementModule(nn.Module):
 
 
 class ContextPath(nn.Module):
+
     def __init__(self, *args, **kwargs):
         super(ContextPath, self).__init__()
         self.resnet = Resnet18()
@@ -172,7 +189,7 @@ class ContextPath(nn.Module):
         feat16_up = self.up16(feat16_sum)
         feat16_up = self.conv_head16(feat16_up)
 
-        return feat16_up, feat32_up # x8, x16
+        return feat16_up, feat32_up  # x8, x16
 
     def init_weight(self):
         for ly in self.children():
@@ -193,6 +210,7 @@ class ContextPath(nn.Module):
 
 
 class SpatialPath(nn.Module):
+
     def __init__(self, *args, **kwargs):
         super(SpatialPath, self).__init__()
         self.conv1 = ConvBNReLU(3, 64, ks=7, stride=2, padding=3)
@@ -227,16 +245,17 @@ class SpatialPath(nn.Module):
 
 
 class FeatureFusionModule(nn.Module):
+
     def __init__(self, in_chan, out_chan, *args, **kwargs):
         super(FeatureFusionModule, self).__init__()
         self.convblk = ConvBNReLU(in_chan, out_chan, ks=1, stride=1, padding=0)
         ## use conv-bn instead of 2 layer mlp, so that tensorrt 7.2.3.4 can work for fp16
         self.conv = nn.Conv2d(out_chan,
-                out_chan,
-                kernel_size = 1,
-                stride = 1,
-                padding = 0,
-                bias = False)
+                              out_chan,
+                              kernel_size=1,
+                              stride=1,
+                              padding=0,
+                              bias=False)
         self.bn = nn.BatchNorm2d(out_chan)
         #  self.conv1 = nn.Conv2d(out_chan,
         #          out_chan//4,
@@ -294,7 +313,10 @@ class BiSeNetV1(nn.Module):
         self.cp = ContextPath()
         self.sp = SpatialPath()
         self.ffm = FeatureFusionModule(256, 256)
-        self.conv_out = BiSeNetOutput(256, 256, n_classes, up_factor=8,
+        self.conv_out = BiSeNetOutput(256,
+                                      256,
+                                      n_classes,
+                                      up_factor=8,
                                       bayes=self.bayes,
                                       prob=self.apply_adf_softmax)
         self.aux_mode = aux_mode

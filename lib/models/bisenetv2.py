@@ -7,15 +7,27 @@ from lib.models.adf import ADFSoftmax
 
 backbone_url = 'https://github.com/CoinCheung/BiSeNet/releases/download/0.0.0/backbone_v2.pth'
 
+
 class ConvBNReLU(nn.Module):
 
-    def __init__(self, in_chan, out_chan, ks=3, stride=1, padding=1,
-                 dilation=1, groups=1, bias=False):
+    def __init__(self,
+                 in_chan,
+                 out_chan,
+                 ks=3,
+                 stride=1,
+                 padding=1,
+                 dilation=1,
+                 groups=1,
+                 bias=False):
         super(ConvBNReLU, self).__init__()
-        self.conv = nn.Conv2d(
-                in_chan, out_chan, kernel_size=ks, stride=stride,
-                padding=padding, dilation=dilation,
-                groups=groups, bias=bias)
+        self.conv = nn.Conv2d(in_chan,
+                              out_chan,
+                              kernel_size=ks,
+                              stride=stride,
+                              padding=padding,
+                              dilation=dilation,
+                              groups=groups,
+                              bias=bias)
         self.bn = nn.BatchNorm2d(out_chan)
         self.relu = nn.ReLU(inplace=True)
 
@@ -42,7 +54,6 @@ class UpSample(nn.Module):
 
     def init_weight(self):
         nn.init.xavier_normal_(self.proj.weight, gain=1.)
-
 
 
 class DetailBranch(nn.Module):
@@ -80,8 +91,10 @@ class StemBlock(nn.Module):
             ConvBNReLU(16, 8, 1, stride=1, padding=0),
             ConvBNReLU(8, 16, 3, stride=2),
         )
-        self.right = nn.MaxPool2d(
-            kernel_size=3, stride=2, padding=1, ceil_mode=False)
+        self.right = nn.MaxPool2d(kernel_size=3,
+                                  stride=2,
+                                  padding=1,
+                                  ceil_mode=False)
         self.fuse = ConvBNReLU(32, 16, 3, stride=1)
 
     def forward(self, x):
@@ -118,16 +131,23 @@ class GELayerS1(nn.Module):
         mid_chan = in_chan * exp_ratio
         self.conv1 = ConvBNReLU(in_chan, in_chan, 3, stride=1)
         self.dwconv = nn.Sequential(
-            nn.Conv2d(
-                in_chan, mid_chan, kernel_size=3, stride=1,
-                padding=1, groups=in_chan, bias=False),
+            nn.Conv2d(in_chan,
+                      mid_chan,
+                      kernel_size=3,
+                      stride=1,
+                      padding=1,
+                      groups=in_chan,
+                      bias=False),
             nn.BatchNorm2d(mid_chan),
-            nn.ReLU(inplace=True), # not shown in paper
+            nn.ReLU(inplace=True),  # not shown in paper
         )
         self.conv2 = nn.Sequential(
-            nn.Conv2d(
-                mid_chan, out_chan, kernel_size=1, stride=1,
-                padding=0, bias=False),
+            nn.Conv2d(mid_chan,
+                      out_chan,
+                      kernel_size=1,
+                      stride=1,
+                      padding=0,
+                      bias=False),
             nn.BatchNorm2d(out_chan),
         )
         self.conv2[1].last_bn = True
@@ -149,34 +169,52 @@ class GELayerS2(nn.Module):
         mid_chan = in_chan * exp_ratio
         self.conv1 = ConvBNReLU(in_chan, in_chan, 3, stride=1)
         self.dwconv1 = nn.Sequential(
-            nn.Conv2d(
-                in_chan, mid_chan, kernel_size=3, stride=2,
-                padding=1, groups=in_chan, bias=False),
+            nn.Conv2d(in_chan,
+                      mid_chan,
+                      kernel_size=3,
+                      stride=2,
+                      padding=1,
+                      groups=in_chan,
+                      bias=False),
             nn.BatchNorm2d(mid_chan),
         )
         self.dwconv2 = nn.Sequential(
-            nn.Conv2d(
-                mid_chan, mid_chan, kernel_size=3, stride=1,
-                padding=1, groups=mid_chan, bias=False),
+            nn.Conv2d(mid_chan,
+                      mid_chan,
+                      kernel_size=3,
+                      stride=1,
+                      padding=1,
+                      groups=mid_chan,
+                      bias=False),
             nn.BatchNorm2d(mid_chan),
-            nn.ReLU(inplace=True), # not shown in paper
+            nn.ReLU(inplace=True),  # not shown in paper
         )
         self.conv2 = nn.Sequential(
-            nn.Conv2d(
-                mid_chan, out_chan, kernel_size=1, stride=1,
-                padding=0, bias=False),
+            nn.Conv2d(mid_chan,
+                      out_chan,
+                      kernel_size=1,
+                      stride=1,
+                      padding=0,
+                      bias=False),
             nn.BatchNorm2d(out_chan),
         )
         self.conv2[1].last_bn = True
         self.shortcut = nn.Sequential(
-                nn.Conv2d(
-                    in_chan, in_chan, kernel_size=3, stride=2,
-                    padding=1, groups=in_chan, bias=False),
-                nn.BatchNorm2d(in_chan),
-                nn.Conv2d(
-                    in_chan, out_chan, kernel_size=1, stride=1,
-                    padding=0, bias=False),
-                nn.BatchNorm2d(out_chan),
+            nn.Conv2d(in_chan,
+                      in_chan,
+                      kernel_size=3,
+                      stride=2,
+                      padding=1,
+                      groups=in_chan,
+                      bias=False),
+            nn.BatchNorm2d(in_chan),
+            nn.Conv2d(in_chan,
+                      out_chan,
+                      kernel_size=1,
+                      stride=1,
+                      padding=0,
+                      bias=False),
+            nn.BatchNorm2d(out_chan),
         )
         self.relu = nn.ReLU(inplace=True)
 
@@ -226,45 +264,46 @@ class BGALayer(nn.Module):
     def __init__(self):
         super(BGALayer, self).__init__()
         self.left1 = nn.Sequential(
-            nn.Conv2d(
-                128, 128, kernel_size=3, stride=1,
-                padding=1, groups=128, bias=False),
+            nn.Conv2d(128,
+                      128,
+                      kernel_size=3,
+                      stride=1,
+                      padding=1,
+                      groups=128,
+                      bias=False),
             nn.BatchNorm2d(128),
-            nn.Conv2d(
-                128, 128, kernel_size=1, stride=1,
-                padding=0, bias=False),
+            nn.Conv2d(128, 128, kernel_size=1, stride=1, padding=0,
+                      bias=False),
         )
         self.left2 = nn.Sequential(
-            nn.Conv2d(
-                128, 128, kernel_size=3, stride=2,
-                padding=1, bias=False),
-            nn.BatchNorm2d(128),
-            nn.AvgPool2d(kernel_size=3, stride=2, padding=1, ceil_mode=False)
-        )
+            nn.Conv2d(128, 128, kernel_size=3, stride=2, padding=1,
+                      bias=False), nn.BatchNorm2d(128),
+            nn.AvgPool2d(kernel_size=3, stride=2, padding=1, ceil_mode=False))
         self.right1 = nn.Sequential(
-            nn.Conv2d(
-                128, 128, kernel_size=3, stride=1,
-                padding=1, bias=False),
+            nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1,
+                      bias=False),
             nn.BatchNorm2d(128),
         )
         self.right2 = nn.Sequential(
-            nn.Conv2d(
-                128, 128, kernel_size=3, stride=1,
-                padding=1, groups=128, bias=False),
+            nn.Conv2d(128,
+                      128,
+                      kernel_size=3,
+                      stride=1,
+                      padding=1,
+                      groups=128,
+                      bias=False),
             nn.BatchNorm2d(128),
-            nn.Conv2d(
-                128, 128, kernel_size=1, stride=1,
-                padding=0, bias=False),
+            nn.Conv2d(128, 128, kernel_size=1, stride=1, padding=0,
+                      bias=False),
         )
         self.up1 = nn.Upsample(scale_factor=4)
         self.up2 = nn.Upsample(scale_factor=4)
         ##TODO: does this really has no relu?
         self.conv = nn.Sequential(
-            nn.Conv2d(
-                128, 128, kernel_size=3, stride=1,
-                padding=1, bias=False),
+            nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1,
+                      bias=False),
             nn.BatchNorm2d(128),
-            nn.ReLU(inplace=True), # not shown in paper
+            nn.ReLU(inplace=True),  # not shown in paper
         )
 
     def forward(self, x_d, x_s):
@@ -281,11 +320,16 @@ class BGALayer(nn.Module):
         return out
 
 
-
 class SegmentHead(nn.Module):
 
-    def __init__(self, in_chan, mid_chan, n_classes,
-                 up_factor=8, aux=True, bayes=False, prob=False):
+    def __init__(self,
+                 in_chan,
+                 mid_chan,
+                 n_classes,
+                 up_factor=8,
+                 aux=True,
+                 bayes=False,
+                 prob=False):
         super(SegmentHead, self).__init__()
         self.conv = ConvBNReLU(in_chan, mid_chan, 3, stride=1)
         self.drop = nn.Dropout(0.1) if aux else nn.Identity()
@@ -297,12 +341,15 @@ class SegmentHead(nn.Module):
         up_factor = up_factor // 2 if aux else up_factor
         self.conv_pre = nn.Sequential(
             nn.Upsample(scale_factor=2),
-            ConvBNReLU(mid_chan, mid_chan2, 3, stride=1)
-            ) if aux else nn.Identity()
+            ConvBNReLU(mid_chan, mid_chan2, 3,
+                       stride=1)) if aux else nn.Identity()
         self.conv_out = nn.Conv2d(mid_chan2, out_chan, 1, 1, 0, bias=True)
-        self.upsample = nn.Upsample(scale_factor=up_factor, mode='bilinear', align_corners=False)
+        self.upsample = nn.Upsample(scale_factor=up_factor,
+                                    mode='bilinear',
+                                    align_corners=False)
         # if we are being bayesian for this layer we will want to set the variance operator
-        self.conv_var = nn.Conv2d(mid_chan2, out_chan, 1, 1, 0, bias=True) if bayes else nn.Identity()
+        self.conv_var = nn.Conv2d(mid_chan2, out_chan, 1, 1, 0,
+                                  bias=True) if bayes else nn.Identity()
         # if we are being bayesian and want to return a categorical probability, we should set the
         # output here to be an ADF Softmax operator
         self.prob = prob
@@ -320,7 +367,7 @@ class SegmentHead(nn.Module):
         # otherwise we aren't in an auxilliary layer, and we are on the output of the model
         # and either want to return the output logit, or the output probability
         elif return_var:
-            var = self.conv_var(feat_basis ** 2.0)
+            var = self.conv_var(feat_basis**2.0)
             # if we specified that we want to get a categorical probability out of this layer,
             # than we need to apply the adf softmax.
             if self.prob:
@@ -353,12 +400,14 @@ class BayesSegmentHead(nn.Module):
         # this is where I am changing things. Am changing the conv out into multiple stages
         # so I can make it a bit bayesian
         self.conv_pre_out = nn.Sequential(
-                nn.Upsample(scale_factor=2),
-                ConvBNReLU(mid_chan, mid_chan2, 3, stride=1)
-                ) if aux else nn.Identity()
+            nn.Upsample(scale_factor=2),
+            ConvBNReLU(mid_chan, mid_chan2, 3,
+                       stride=1)) if aux else nn.Identity()
         # self.conv_bayes = Conv2dReparameterization(mid_chan2,  out_chan, 1, 1, 0, bias=True)
-        self.conv_bayes = nn.Conv2d(mid_chan2,  out_chan, 1, 1, 0, bias=True)
-        self.upscale_output = nn.Upsample(scale_factor=up_factor, mode='bilinear', align_corners=False)
+        self.conv_bayes = nn.Conv2d(mid_chan2, out_chan, 1, 1, 0, bias=True)
+        self.upscale_output = nn.Upsample(scale_factor=up_factor,
+                                          mode='bilinear',
+                                          align_corners=False)
 
     def forward(self, x):
         feat_basis = self.conv(x)
@@ -373,14 +422,13 @@ class BayesSegmentHead(nn.Module):
         raise NotImplementedError('To be implemented')
 
         self.conv_out = nn.Sequential(
-            nn.Sequential(
-                nn.Upsample(scale_factor=2),
-                ConvBNReLU(mid_chan, mid_chan2, 3, stride=1)
-                ) if aux else nn.Identity(),
+            nn.Sequential(nn.Upsample(
+                scale_factor=2), ConvBNReLU(mid_chan, mid_chan2, 3, stride=1))
+            if aux else nn.Identity(),
             nn.Conv2d(mid_chan2, out_chan, 1, 1, 0, bias=True),
-            nn.Upsample(scale_factor=up_factor, mode='bilinear', align_corners=False)
-        )
-
+            nn.Upsample(scale_factor=up_factor,
+                        mode='bilinear',
+                        align_corners=False))
 
 
 class BiSeNetV2(nn.Module):
@@ -395,9 +443,13 @@ class BiSeNetV2(nn.Module):
         self.apply_adf_softmax = (aux_mode == 'eval_bayes_prob')
 
         ## TODO: what is the number of mid chan ?
-        self.head = SegmentHead(128, 1024, n_classes,
-                                up_factor=8, aux=False,
-                                bayes=self.bayes, prob=self.apply_adf_softmax)
+        self.head = SegmentHead(128,
+                                1024,
+                                n_classes,
+                                up_factor=8,
+                                aux=False,
+                                bayes=self.bayes,
+                                prob=self.apply_adf_softmax)
         if self.aux_mode == 'train':
             self.aux2 = SegmentHead(16, 128, n_classes, up_factor=4)
             self.aux3 = SegmentHead(32, 128, n_classes, up_factor=8)
@@ -446,7 +498,6 @@ class BiSeNetV2(nn.Module):
                 nn.init.zeros_(module.bias)
         self.load_pretrain()
 
-
     def load_pretrain(self):
         state = modelzoo.load_url(backbone_url)
         for name, child in self.named_children():
@@ -454,6 +505,7 @@ class BiSeNetV2(nn.Module):
                 child.load_state_dict(state[name], strict=True)
 
     def get_params(self):
+
         def add_param_to_list(mod, wd_params, nowd_params):
             for param in mod.parameters():
                 if param.dim() == 1:
@@ -483,7 +535,11 @@ class BayesBiSeNetV2(nn.Module):
         self.bga = BGALayer()
 
         ## TODO: what is the number of mid chan ?
-        self.head = BayesSegmentHead(128, 1024, n_classes, up_factor=8, aux=False)
+        self.head = BayesSegmentHead(128,
+                                     1024,
+                                     n_classes,
+                                     up_factor=8,
+                                     aux=False)
         if self.aux_mode == 'train':
             self.aux2 = SegmentHead(16, 128, n_classes, up_factor=4)
             self.aux3 = SegmentHead(32, 128, n_classes, up_factor=8)
@@ -513,6 +569,7 @@ class BayesBiSeNetV2(nn.Module):
                 child.load_state_dict(state[name], strict=True)
 
     def get_params(self):
+
         def add_param_to_list(mod, wd_params, nowd_params, force_no_wd=False):
             for param in mod.parameters():
                 if param.dim() == 1 or force_no_wd:
@@ -556,10 +613,6 @@ class BayesBiSeNetV2(nn.Module):
             return logits, feat_basis
         else:
             raise NotImplementedError
-
-
-
-
 
 
 if __name__ == "__main__":

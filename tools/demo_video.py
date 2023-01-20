@@ -1,5 +1,5 @@
-
 import sys
+
 sys.path.insert(0, '.')
 import argparse
 import torch
@@ -15,25 +15,42 @@ import lib.data.transform_cv2 as T
 from lib.models import model_factory
 from configs import set_cfg_from_file
 
-
 torch.set_grad_enabled(False)
-
 
 # args
 parse = argparse.ArgumentParser()
-parse.add_argument('--config', dest='config', type=str, default='configs/bisenetv2.py',)
-parse.add_argument('--weight-path', type=str, default='./res/model_final.pth',)
-parse.add_argument('--input', dest='input', type=str, default='./example.mp4',)
-parse.add_argument('--output', dest='output', type=str, default='./res.mp4',)
+parse.add_argument(
+    '--config',
+    dest='config',
+    type=str,
+    default='configs/bisenetv2.py',
+)
+parse.add_argument(
+    '--weight-path',
+    type=str,
+    default='./res/model_final.pth',
+)
+parse.add_argument(
+    '--input',
+    dest='input',
+    type=str,
+    default='./example.mp4',
+)
+parse.add_argument(
+    '--output',
+    dest='output',
+    type=str,
+    default='./res.mp4',
+)
 args = parse.parse_args()
 cfg = set_cfg_from_file(args.config)
-
 
 
 # define model
 def get_model():
     net = model_factory[cfg.model_type](cfg.n_cats, aux_mode='eval')
-    net.load_state_dict(torch.load(args.weight_path, map_location='cpu'), strict=False)
+    net.load_state_dict(torch.load(args.weight_path, map_location='cpu'),
+                        strict=False)
     net.eval()
     net.cuda()
     return net
@@ -47,7 +64,7 @@ def get_func(inpth, in_q, done):
     fps = cap.get(cv2.CAP_PROP_FPS)
 
     to_tensor = T.ToTensor(
-        mean=(0.3257, 0.3690, 0.3223), # city, rgb
+        mean=(0.3257, 0.3690, 0.3223),  # city, rgb
         std=(0.2112, 0.2148, 0.2115),
     )
 
@@ -77,9 +94,8 @@ def save_func(inpth, outpth, out_q):
     fps = cap.get(cv2.CAP_PROP_FPS)
     cap.release()
 
-    video_writer = cv2.VideoWriter(outpth,
-            cv2.VideoWriter_fourcc(*"mp4v"),
-            fps, (int(width), int(height)))
+    video_writer = cv2.VideoWriter(outpth, cv2.VideoWriter_fourcc(*"mp4v"),
+                                   fps, (int(width), int(height)))
 
     while True:
         out = out_q.get()
@@ -96,13 +112,14 @@ def save_func(inpth, outpth, out_q):
 def infer_batch(frames):
     frames = torch.cat(frames, dim=0).cuda()
     H, W = frames.size()[2:]
-    frames = F.interpolate(frames, size=(768, 768), mode='bilinear',
-            align_corners=False) # must be divisible by 32
+    frames = F.interpolate(frames,
+                           size=(768, 768),
+                           mode='bilinear',
+                           align_corners=False)  # must be divisible by 32
     out = net(frames)[0]
     out = F.interpolate(out, size=(H, W), mode='bilinear',
-            align_corners=False).argmax(dim=1).detach().cpu()
+                        align_corners=False).argmax(dim=1).detach().cpu()
     out_q.put(out)
-
 
 
 if __name__ == '__main__':
@@ -112,10 +129,9 @@ if __name__ == '__main__':
     out_q = mp.Queue(1024)
     done = mp.Event()
 
-    in_worker = mp.Process(target=get_func,
-            args=(args.input, in_q, done))
+    in_worker = mp.Process(target=get_func, args=(args.input, in_q, done))
     out_worker = mp.Process(target=save_func,
-            args=(args.input, args.output, out_q))
+                            args=(args.input, args.output, out_q))
 
     in_worker.start()
     out_worker.start()

@@ -112,7 +112,6 @@ def gen_camvid():
             fw.write('\n'.join(lines))
 
 
-
 if __name__ == '__main__':
     parse = argparse.ArgumentParser()
     parse.add_argument('--dataset', dest='dataset', type=str, default='coco')

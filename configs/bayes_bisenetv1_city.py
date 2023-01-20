@@ -2,7 +2,7 @@
 cfg = dict(
     model_type='bisenetv1',
     model_config='bayes',
-    var_step = 10,
+    var_step=10,
     momentum=0.9,
     n_cats=19,
     num_aux_heads=4,

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-
 ## enet
 cfg = dict(
     model_type='enet',

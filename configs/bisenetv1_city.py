@@ -1,4 +1,3 @@
-
 cfg = dict(
     model_type='bisenetv1',
     n_cats=19,
