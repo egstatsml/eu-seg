@@ -1,0 +1,23 @@
+## pidnet-s
+cfg = dict(
+    model_type='pidnet_s',
+    n_cats=32,
+    num_aux_heads=0,
+    lr_start=5e-3,
+    weight_decay=5e-4,
+    warmup_iters=100,
+    max_iter=1000,
+    dataset='camvid',
+    im_root='/home/ethan/exp_data/camvid/CamVid',
+    train_im_anns='./datasets/camvid/train.txt',
+    val_im_anns='./datasets/camvid/val.txt',
+    scales=[0.25, 2.],
+    cropsize=[512, 1024],
+    eval_crop=[1024, 1024],
+    eval_scales=[0.5, 0.75, 1.0, 1.25, 1.5, 1.75],
+    ims_per_gpu=4,
+    eval_ims_per_gpu=2,
+    use_fp16=True,
+    use_sync_bn=True,
+    respth='./res',
+)
