@@ -357,18 +357,18 @@ adf_softmax = ADFSoftmax()
 s_mean, s_var = adf_softmax(logit_mean, logit_var)
 
 for i in range(19):
-    s_var_class = s_var[0, i, :, :]
-    plt.imshow(torch.squeeze(s_var_class).cpu().numpy())
+    s_std_class = torch.sqrt(s_var[0, i, :, :])
+    plt.imshow(torch.squeeze(s_std_class).cpu().numpy())
     plt.title(labels[i].name)
-    plt.savefig(osp.join(decision_dir, f'var_{i}.png'))
+    plt.savefig(osp.join(decision_dir, f'std_{i}.png'))
     plt.clf()
 
-# class conditional variance for class of interest
-s_var_class = s_var[0, 4, :, :]
+# class conditional standard deviation for class of interest
+s_std_class = torch.sqrt(s_var[0, 4, :, :])
 plt.imshow(torch.squeeze(s_var_class).cpu().numpy())
 ax = plt.gca()
 ax.set_axis_off()
-plt.savefig(osp.join(decision_dir, f'var_class.png'),
+plt.savefig(osp.join(decision_dir, f'std_class.png'),
             bbox_inches='tight',
             pad_inches=0)
 plt.clf()

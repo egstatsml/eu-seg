@@ -2,9 +2,13 @@
 
 This repo contains code for the paper: Uncertainty in Real-Time Semantic Segmentation on Embedded Systems 
 
+[arXiv Link to paper](https://arxiv.org/abs/2301.01201). 
+
+If you came from the CVPR version of the paper, would recommend referring to the arXiv version as I found a typo that I have since corrected (I forgot a power of 2 in Eqn. 15. for the variance.)
+
+
 ![example plots](assets/eu-seg-examples.png)
 
-[Link to paper](https://arxiv.org/abs/2301.01201)
 
 ## Description
 
@@ -126,3 +130,18 @@ Then you need to change the field of `im_root` and `train/val_im_anns` in the co
 
 ## Compilation with TensorRT
 Instructions for compilation with TensorRT can be found [here](./tensorrt/README.md)
+
+## Questions?
+Feel free to email me (Ethan) at ej.goan@qut.edu.au
+
+## Citation
+
+``` 
+@inproceedings{goan2023uncertainty,
+  title={Uncertainty in Real-Time Semantic Segmentation on Embedded Systems},
+  author={Goan, Ethan and Fookes, Clinton},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  pages={4490--4500},
+  year={2023}
+}
+```
