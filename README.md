@@ -1,10 +1,10 @@
-# eu-seg - Embedded Uncertainty for Semantic Segmentation
+# Embedded Uncertainty for Semantic Segmentation
 
 This repo contains code for the paper: Uncertainty in Real-Time Semantic Segmentation on Embedded Systems 
 
 [arXiv Link to paper](https://arxiv.org/abs/2301.01201). 
 
-If you came from the CVPR version of the paper, would recommend referring to the arXiv version as I found a typo that I have since corrected (I forgot a power of 2 in Eqn. 15. for the variance.)
+If you came from the CVPR version of the paper, would recommend referring to the arXiv version as I found a typo that I have since corrected (I forgot a power of 2 in Eqn. 15. for the variance), and unfortunately [IEEE don't allow for corrections](https://statmodeling.stat.columbia.edu/2020/12/10/ieees-refusal-to-issue-corrections/). Regardless have corrected the arXiv version, but apologies for the inconvenience.  
 
 
 ![example plots](assets/eu-seg-examples.png)
@@ -137,11 +137,10 @@ Feel free to email me (Ethan) at ej.goan@qut.edu.au
 ## Citation
 
 ``` 
-@inproceedings{goan2023uncertainty,
+@article{goan2023uncertainty,
   title={Uncertainty in Real-Time Semantic Segmentation on Embedded Systems},
   author={Goan, Ethan and Fookes, Clinton},
-  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
-  pages={4490--4500},
+  journal={arXiv preprint arXiv:2301.01201},
   year={2023}
 }
 ```
