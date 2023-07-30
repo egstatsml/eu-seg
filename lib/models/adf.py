@@ -25,7 +25,7 @@ class ADFSoftmax(nn.Module):
         log_gaussian_variance = 2 * log_gaussian_mean
 
         log_gaussian_mean = torch.exp(log_gaussian_mean)
-        log_gaussian_variance = torch.exp(log_gaussian_variance)
+        log_gaussian_variance = torch.exp(log_gaussian_variance + inputs_variance)
         log_gaussian_variance = log_gaussian_variance * (
             torch.exp(features_variance) - 1)
 
