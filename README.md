@@ -4,8 +4,8 @@ This repo contains code for the paper: Uncertainty in Real-Time Semantic Segment
 
 [arXiv Link to paper](https://arxiv.org/abs/2301.01201). 
 
-If you came from the CVPR version of the paper, would recommend referring to the arXiv version as I found a typo that I have since corrected (I forgot a power of 2 in Eqn. 15. for the variance), and unfortunately [IEEE don't allow for corrections](https://statmodeling.stat.columbia.edu/2020/12/10/ieees-refusal-to-issue-corrections/). Regardless have corrected the arXiv version, but apologies for the inconvenience.  
-
+## Corrections made in arXiv version
+If you came from the CVPR version of the paper, would recommend referring to the arXiv version as I found an error that I have since corrected. Specifically, I didn't square some of some standard deviations, (particularly in Eqn. 15.), so that what I was referring to as a variance was actually a standard deviation. Is one of those mistakes that doesn't  change any of the results, methods, or conclusions, but is still an error and would like to make the best efforts to correct it. Unfortunately, [IEEE don't allow for corrections](https://statmodeling.stat.columbia.edu/2020/12/10/ieees-refusal-to-issue-corrections/). Regardless have corrected the arXiv version, and tidied the notation to make more clear, so I would recommend citing that version as well, but I sincerely apologies for the inconvenience (citation info at end of this README). 
 
 ![example plots](assets/eu-seg-examples.png)
 
