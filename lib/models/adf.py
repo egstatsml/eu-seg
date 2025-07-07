@@ -38,9 +38,9 @@ class ADFSoftmax(nn.Module):
                                          keepdim=True)
         # now approximate the mean and variance of this using taylor expansion approx.
         outputs_mean = log_gaussian_mean / (denominator_mean + eps)
-        outputs_variance = outputs_mean ** 2.0 * (log_gaussian_variance +
-                                                  denominator_variance +
-                                                  eps)
+        outputs_variance = outputs_mean *  np.sqrt(log_gaussian_variance +
+                                                   denominator_variance +
+                                                   eps)
         # again make sure output variance is kept
         outputs_variance = self.keep_variance(outputs_variance)
         return outputs_mean, outputs_variance

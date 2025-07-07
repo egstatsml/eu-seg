@@ -4,9 +4,6 @@ This repo contains code for the paper: Uncertainty in Real-Time Semantic Segment
 
 [arXiv Link to paper](https://arxiv.org/abs/2301.01201). 
 
-## Corrections made in arXiv version
-If you came from the CVPR version of the paper, would recommend referring to the arXiv version as I found an error that I have since corrected. Specifically, I didn't square the standard deviation in Equation 15, so that what I was referring to as a variance was actually a standard deviation. Is one of those typos/mistakes that doesn't change any of the results, methods, or conclusions, but is still an error and would like to make the best efforts to correct it. I have informed the Computer Vision Foundation and Errata has been added to the CVPR repository notes [here](https://openaccess.thecvf.com/CVPR2023_workshops/EVW).
-
 ![example plots](assets/eu-seg-examples.png)
 
 
