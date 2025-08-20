@@ -2,9 +2,13 @@
 
 This repo contains code for the paper: Uncertainty in Real-Time Semantic Segmentation on Embedded Systems 
 
-[arXiv Link to paper](https://arxiv.org/abs/2301.01201). 
+[Upated paper](https://arxiv.org/abs/2301.01201).
 
 ![example plots](assets/eu-seg-examples.png)
+
+### Changelog
+2025-08 - added description of changes to variance approx. in [34]
+
 
 
 ## Description
@@ -15,6 +19,18 @@ This work expands upon the BiSeNet models for real-time semantic segmentation to
 ![probabilistic model](assets/eu-seg-model.png)
 
 This code is based of the implementation of BiSeNet by [CoinCheung](https://github.com/CoinCheung/BiSeNet), which includes instructions for compilation to using TensorRT. This code has also been modified to permit the use of the proposed probabilistic segmentation module. Instructions for TensorRT compilation can be found  [here](./tensorrt). 
+
+### Variance Approximation
+In this work, we build on [34] to find an approximation to the variance of the ratio of Gaussians. In our work we use,
+
+![eq1](assets/eq1.png)
+
+while [34] provides the much more accurate approximation,
+
+![eq1](assets/eq2.png)
+
+This will be much more accurate and scaled appropriately, this numerically unstable for our approach and will frequently result in numerical overflow when computing terms for the denominator and operating in half-precision. Our approach avoids this by using the numerically [stable version of the Softmax](https://blester125.com/blog/softmax.html). Our output variance will be considerable higher, though experimentation shows that it follows the same overall trend and is scaled higher than [34]. If operating in single precision mode, numerical overflow is less common but can still occur. Newer NVIDIA devices offer bfloat16 and this may be able to handle it better, and depending on the Jetpack version the compiled TensorRT module may compile the operation to half or single precision.
+
 
 ## Training
 
